@@ -1,0 +1,13 @@
+[allservers]
+testserver01 ansible_port=22 ansible_host=3.92.138.25
+testserver02 ansible_port=22 ansible_host=54.210.229.246
+testserver03 ansible_port=22 ansible_host=54.86.138.80
+
+[webservers]
+testserver01 ansible_port=22 ansible_host=3.92.138.25
+
+[appservers]
+testserver02 ansible_port=22 ansible_host=54.210.229.246
+
+[dbservers]
+testserver03 ansible_port=22 ansible_host=54.86.138.80
