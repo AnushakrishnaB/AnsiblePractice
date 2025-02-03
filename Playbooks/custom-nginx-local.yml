@@ -1,0 +1,89 @@
+---
+  - name: Play for Install Nginx on WebServers
+    hosts: allservers
+    gather_facts: yes
+    become: yes
+    become_user: root
+    vars:
+     CLOUD1: "AWS"
+     CLOUD2: "AZURE"
+     CLOUD3: "GCP"
+     HOSTNAME: "{{ ansible_facts['hostname'] }}"
+     OS: "{{ ansible_facts['distribution'] }}"
+    tasks:
+       - name: Run Apt Update
+         shell: apt update
+
+       - name: Clone Git Repo
+         shell: cd /tmp && rm -rf dockertest1 && git clone -b DevOpsB28 https://github.com/mavrick202/dockertest1.git
+         tags:
+           - clone
+       - name: Install Nginx Server
+         apt: >
+           name=nginx
+           state=present
+         tags:
+           - install
+
+       - name: Copy the files to index destination folder.
+         copy: >
+            src=/tmp/dockertest1/index.html
+            dest=/var/www/html/index.nginx-debian.html
+            remote_src=yes
+            owner=root
+            group=root
+            mode=0644
+         tags:
+           - index
+         notify:
+            - restart nginx
+       - name: Copy the style files to  destination folder.
+         copy: >
+            src=/tmp/dockertest1/style.css
+            dest=/var/www/html/style.css
+            remote_src=yes
+            owner=root
+            group=root
+            mode=0644
+         tags:
+           - style
+         notify:
+            - restart nginx
+       - name: Copy the javascript files to  destination folder.
+         copy: >
+            src=/tmp/dockertest1/scorekeeper.js
+            dest=/var/www/html/scorekeeper.js
+            remote_src=yes
+            owner=root
+            group=root
+            mode=0644
+         tags:
+           - scorekeeper
+         notify:
+            - restart nginx
+       - name: Print Variables
+         debug:
+           msg:
+           - "{{ CLOUD1 }}"
+           - "{{ CLOUD2 }}"
+           - "{{ CLOUD3 }}"
+
+       - name: Check Free Memory
+         shell: free
+         register: free_memory
+
+       - name: Print Free Space
+         debug:
+           var: free_memory['stdout_lines']
+       - name: Print FACTS
+         debug:
+           msg:
+           - "{{ ansible_facts['hostname'] }}"
+           - "{{ ansible_facts['fqdn'] }}"
+           - "{{ ansible_facts['distribution'] }}"
+           - "{{ HOSTNAME }}"
+           - "{{ OS }}"
+
+    handlers:
+    - name: restart nginx
+      command: service nginx restart
